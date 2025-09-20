@@ -1880,15 +1880,12 @@ async function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
     
-    // 빈 메시지나 사용자가 없으면 리턴
     if (!message || !currentUser) return;
     
-    // 전송 중 중복 방지
     const sendBtn = document.querySelector('.send-btn');
     if (sendBtn.disabled) return;
     
     try {
-        // 버튼 비활성화로 중복 전송 방지
         sendBtn.disabled = true;
         
         const messageData = { 
@@ -1898,76 +1895,89 @@ async function sendMessage() {
             timestamp: firebase.database.ServerValue.TIMESTAMP 
         };
         
-        if (currentUserType === 'doctor' && currentChatPatientId) {
+        // 환자인 경우 의료진에게 보내는 메시지로 설정
+        if (currentUserType === 'patient') {
+            messageData.forDoctors = true; // 의료진용 메시지 표시
+        } else if (currentUserType === 'doctor' && currentChatPatientId) {
             messageData.recipientId = currentChatPatientId;
         }
         
         await database.ref('messages').push(messageData);
-        input.value = ''; // 전송 후 입력창 비우기
+        input.value = '';
         
     } catch (error) { 
         console.error('메시지 전송 에러:', error);
         alert('메시지 전송에 실패했습니다. 다시 시도해주세요.');
     } finally {
-        // 전송 완료 후 버튼 다시 활성화
         setTimeout(() => {
             sendBtn.disabled = false;
-        }, 500); // 0.5초 후 활성화
+        }, 500);
     }
 }
 
 // 채팅 메시지 로드 함수 (중복 리스너 방지)
 function loadChatMessages() {
-    // 이미 활성화된 리스너가 있으면 중복 등록 방지
     if (isChatListenerActive) {
         console.log('채팅 리스너가 이미 활성화되어 있습니다.');
         return;
     }
     
-    // 기존 리스너 정리
     if (chatMessagesListener) {
         chatMessagesListener.off();
         chatMessagesListener = null;
     }
     
-    // 메시지 컨테이너 초기화
     const messagesContainer = document.getElementById('chatMessages');
     if (messagesContainer) {
         messagesContainer.innerHTML = '';
     }
     
-    const messagesRef = database.ref('messages').limitToLast(50);
-    chatMessagesListener = messagesRef;
-    isChatListenerActive = true;
-    
-    // 'value' 이벤트로 한 번만 모든 메시지를 가져옴
-    messagesRef.once('value', (snapshot) => {
-        const messages = snapshot.val() || {};
-        const messagesList = Object.entries(messages).sort(([,a], [,b]) => a.timestamp - b.timestamp);
+    // 환자는 본인 관련 메시지만 로드
+    if (currentUserType === 'patient') {
+        const messagesRef = database.ref('messages')
+            .orderByChild('timestamp')
+            .limitToLast(50);
         
-        // 마지막 메시지의 타임스탬프 기억
-        if (messagesList.length > 0) {
-            lastLoadedMessageTimestamp = messagesList[messagesList.length - 1][1].timestamp;
-        }
+        chatMessagesListener = messagesRef;
+        isChatListenerActive = true;
         
-        messagesList.forEach(([, message]) => {
-            displayMessage(message);
-        });
-        
-        // 기존 메시지 로드 완료 후 실시간 리스너 등록 (약간의 지연)
-        setTimeout(() => {
-            messagesRef.on('child_added', (snapshot) => {
-                const message = snapshot.val();
-                
-                // 이미 로드된 메시지는 건너뛰기
-                if (lastLoadedMessageTimestamp && message.timestamp <= lastLoadedMessageTimestamp) {
-                    return;
-                }
-                
+        messagesRef.once('value', (snapshot) => {
+            const messages = snapshot.val() || {};
+            const patientMessages = Object.entries(messages)
+                .filter(([, message]) => {
+                    // 환자 자신이 보낸 메시지이거나, 환자에게 온 메시지만
+                    return (message.senderId === currentUser.uid) || 
+                           (message.recipientId === currentUser.uid) ||
+                           (message.senderType === 'doctor' && !message.recipientId); // 일반 의료진 메시지
+                })
+                .sort(([,a], [,b]) => a.timestamp - a.timestamp);
+            
+            if (patientMessages.length > 0) {
+                lastLoadedMessageTimestamp = patientMessages[patientMessages.length - 1][1].timestamp;
+            }
+            
+            patientMessages.forEach(([, message]) => {
                 displayMessage(message);
             });
-        }, 100); // 100ms 지연
-    });
+            
+            setTimeout(() => {
+                messagesRef.on('child_added', (snapshot) => {
+                    const message = snapshot.val();
+                    
+                    if (lastLoadedMessageTimestamp && message.timestamp <= lastLoadedMessageTimestamp) {
+                        return;
+                    }
+                    
+                    // 환자 관련 메시지만 표시
+                    if ((message.senderId === currentUser.uid) || 
+                        (message.recipientId === currentUser.uid) ||
+                        (message.senderType === 'doctor' && !message.recipientId)) {
+                        displayMessage(message);
+                    }
+                });
+            }, 100);
+        });
+    }
 }
 
 function displayMessage(message) {
