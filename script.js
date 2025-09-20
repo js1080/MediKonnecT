@@ -592,16 +592,21 @@ async function loadPatientManagement() {
     const listEl = document.getElementById('patientManagementList');
     listEl.innerHTML = '<div class="loading" style="text-align: center;">환자 목록을 불러오는 중...</div>';
     
+    console.log('=== 환자 관리 로드 디버깅 ===');
+    console.log('현재 의사 ID:', currentUser.uid);
+    
     try {
         const today = new Date().toISOString().split('T')[0];
         
         // 의사-환자 관계 정보 가져오기
         const doctorPatientsSnapshot = await database.ref(`doctorPatients/${currentUser.uid}`).once('value');
         const doctorPatients = doctorPatientsSnapshot.val() || {};
+        console.log('직접 관리 환자:', doctorPatients);
         
         // 처방전 정보 가져오기
         const prescriptionsSnapshot = await database.ref('prescriptions').once('value');
         const allPrescriptions = prescriptionsSnapshot.val() || {};
+        console.log('전체 처방전 개수:', Object.keys(allPrescriptions).length);
         
         // 사용자 정보 가져오기
         const usersSnapshot = await database.ref('users').once('value');
@@ -768,16 +773,16 @@ function showAddPatientModal() {
             
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: bold;">환자 검색</label>
-                <input type="text" id="patientSearchInput" placeholder="환자 이름 또는 이메일 입력" style="
+                <input type="text" id="doctorPatientSearchInput" placeholder="환자 이름 또는 이메일 입력" style="
                     width: 100%;
                     padding: 12px;
                     border: 2px solid #e0e0e0;
                     border-radius: 8px;
                     font-size: 16px;
-                " oninput="searchPatients(this.value)">
+                " oninput="searchPatientsForDoctor(this.value)">
             </div>
             
-            <div id="patientSearchResults" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;"></div>
+            <div id="doctorPatientSearchResults" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;"></div>
             
             <div style="display: flex; gap: 10px;">
                 <button onclick="closeAddPatientModal()" style="
@@ -798,12 +803,11 @@ function showAddPatientModal() {
     };
     
     document.body.appendChild(modal);
-    document.getElementById('patientSearchInput').focus();
+    document.getElementById('doctorPatientSearchInput').focus();
 }
 
-// 환자 검색
-async function searchPatients(query) {
-    const resultsDiv = document.getElementById('patientSearchResults');
+async function searchPatientsForDoctor(query) {
+    const resultsDiv = document.getElementById('doctorPatientSearchResults');
     
     if (!query.trim()) {
         resultsDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">환자 이름 또는 이메일을 입력하세요.</p>';
@@ -818,7 +822,7 @@ async function searchPatients(query) {
     try {
         resultsDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 15px;">검색 중...</p>';
         
-        // 보호자 검색과 동일한 방식으로 실제 Firebase에서 환자 검색
+        // 실제 Firebase에서 환자 검색
         const usersSnapshot = await database.ref('users').orderByChild('userType').equalTo('patient').once('value');
         const allPatients = usersSnapshot.val() || {};
         
@@ -876,8 +880,13 @@ async function searchPatients(query) {
     }
 }
 
+
+
 // 환자를 관리 대상에 추가
 async function addPatientToManagement(patientId, patientName) {
+    console.log('환자 추가 시도:', patientId, patientName);
+    console.log('현재 의사 ID:', currentUser.uid);
+    
     try {
         showLoading(true);
         
@@ -886,6 +895,8 @@ async function addPatientToManagement(patientId, patientName) {
             addedAt: firebase.database.ServerValue.TIMESTAMP,
             patientName: patientName
         });
+        
+        console.log('환자 추가 완료');
         
         // 환자에게 알림 전송
         await database.ref(`notifications/${patientId}`).push({
@@ -902,7 +913,7 @@ async function addPatientToManagement(patientId, patientName) {
         
     } catch (error) {
         console.error('환자 추가 오류:', error);
-        alert('환자 추가 중 오류가 발생했습니다.');
+        alert('환자 추가 중 오류가 발생했습니다: ' + error.message);
     } finally {
         showLoading(false);
     }
@@ -1143,27 +1154,58 @@ async function loadMedicationGuide() {
     guideList.innerHTML = '<div class="loading" style="text-align: center;">환자 복약 현황을 불러오는 중...</div>';
     
     try {
-        // 모든 환자의 처방전 확인
+        const today = new Date().toISOString().split('T')[0];
+        
+        // 1. 먼저 현재 의사가 직접 관리하는 환자들만 가져오기
+        const doctorPatientsSnapshot = await database.ref(`doctorPatients/${currentUser.uid}`).once('value');
+        const directPatients = Object.keys(doctorPatientsSnapshot.val() || {});
+        
+        // 2. 현재 의사가 처방한 환자들만 가져오기
         const prescriptionsSnapshot = await database.ref('prescriptions').once('value');
         const allPrescriptions = prescriptionsSnapshot.val() || {};
+        
+        let prescriptionPatients = [];
+        Object.entries(allPrescriptions).forEach(([patientId, patientPrescriptions]) => {
+            // 현재 의사가 처방한 활성 처방전만 확인
+            const myActivePrescriptions = Object.values(patientPrescriptions).filter(p => 
+                p.prescribedById === currentUser.uid && 
+                p.isActive && 
+                today >= p.startDate && 
+                today <= p.endDate
+            );
+            if (myActivePrescriptions.length > 0) {
+                prescriptionPatients.push(patientId);
+            }
+        });
+        
+        // 3. 현재 의사와 연결된 환자들만 (중복 제거)
+        const managedPatients = [...new Set([...directPatients, ...prescriptionPatients])];
+        
+        if (managedPatients.length === 0) {
+            guideList.innerHTML = '<p style="text-align: center; color: #666;">관리 중인 환자가 없습니다.</p>';
+            return;
+        }
         
         // 사용자 정보 가져오기
         const usersSnapshot = await database.ref('users').once('value');
         const users = usersSnapshot.val() || {};
         
-        // 부작용 신고 확인
+        // 부작용 신고 확인 (현재 의사에게 온 것만)
         const sideEffectReports = await getSideEffectReports();
         
-        const today = new Date().toISOString().split('T')[0];
         let patientsData = [];
         
-        // 각 환자별 복약 현황 분석
-        for (const [patientId, prescriptions] of Object.entries(allPrescriptions)) {
+        // 현재 의사가 관리하는 환자들만 분석
+        for (const patientId of managedPatients) {
             const patient = users[patientId];
             if (!patient || patient.userType !== 'patient') continue;
             
-            const activePrescriptions = Object.values(prescriptions).filter(p => 
-                p.isActive && today >= p.startDate && today <= p.endDate
+            const patientPrescriptions = allPrescriptions[patientId] || {};
+            const activePrescriptions = Object.values(patientPrescriptions).filter(p => 
+                p.prescribedById === currentUser.uid &&  // 현재 의사가 처방한 것만
+                p.isActive && 
+                today >= p.startDate && 
+                today <= p.endDate
             );
             
             if (activePrescriptions.length > 0) {
@@ -1176,12 +1218,15 @@ async function loadMedicationGuide() {
                 
                 activePrescriptions.forEach(prescription => {
                     totalRequired += prescription.times.length;
-                    if (todayAdherence[Object.keys(prescriptions).find(key => prescriptions[key] === prescription)]) {
-                        taken += Object.keys(todayAdherence[Object.keys(prescriptions).find(key => prescriptions[key] === prescription)] || {}).length;
+                    const prescriptionKey = Object.keys(patientPrescriptions).find(key => 
+                        patientPrescriptions[key] === prescription
+                    );
+                    
+                    if (todayAdherence[prescriptionKey]) {
+                        taken += Object.keys(todayAdherence[prescriptionKey] || {}).length;
                     }
                 });
                 
-                // 부작용 신고 여부 확인
                 const hasSideEffectReport = sideEffectReports.some(report => report.patientId === patientId);
                 
                 patientsData.push({
