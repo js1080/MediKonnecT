@@ -31,9 +31,9 @@ let isGuardianVerified = false;
 let selectedPatientForVerification = null;
 let guardianManagedPatients = [];
 
-// =============================================
-// ### 알림 관련 함수들 (먼저 정의) ###
-// =============================================
+
+// 알림 관련 함수들 (먼저 정의)
+
 
 // 알림 권한 요청 함수
 function requestNotificationPermission() {
@@ -369,9 +369,7 @@ isGuardianVerified = false;
 selectedPatientForVerification = null;
 guardianManagedPatients = [];
 
-// =============================================
-// ### 핵심 로직 (인증, 화면 전환) ###
-// =============================================
+
 
 // 사용자 데이터 로드 (구조 개선)
 async function loadUserData() {
@@ -490,9 +488,7 @@ function showScreen(screenId) {
     }
 }
 
-// =============================================
-// ### 사용자 인증 및 관리 ###
-// =============================================
+
 
 function selectUserType(type) {
     currentUserType = type;
@@ -583,9 +579,6 @@ async function logout() {
     }
 }
 
-// =============================================
-// ### 복약 처방 및 관리 기능 ###
-// =============================================
 
 // --- 의료진 기능 ---
 async function loadPatientManagement() {
@@ -1916,9 +1909,7 @@ async function takeMedication(medicationId) {
     } catch (error) { console.error('복약 처리 에러:', error); }
 }
 
-// =============================================
-// ### 공통 기능 (채팅, 예약, Q&A) - 수정됨 ###
-// =============================================
+
 
 // 메시지 전송 함수 (중복 전송 방지 추가)
 async function sendMessage() {
@@ -2171,9 +2162,7 @@ function askQuestion() {
     }
 }
 
-// =============================================
-// ### 의료진 전용 기능 ###
-// =============================================
+
 
 async function loadDoctorChatList() {
     const chatListContainer = document.getElementById('patientChatList');
@@ -2286,9 +2275,7 @@ async function submitAnswer(qnaId) {
     } catch (error) { console.error('답변 등록 에러:', error); }
 }
 
-// =============================================
-// ### 유틸리티 및 헬퍼 함수 ###
-// =============================================
+
 
 // 뒤로가기 함수 수정 (리스너 정리 추가)
 function goBack() {
@@ -3525,3 +3512,4 @@ async function clearSideEffectStatus() {
         console.error('부작용 상태 해제 오류:', error);
     }
 }
+
