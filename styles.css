@@ -1,0 +1,748 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #2175f4, #1e5ec4);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: white;
+    border-radius: 20px 20px 0 0;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.screen {
+    display: none;
+    padding: 20px;
+    min-height: calc(100vh - 80px);
+}
+
+.screen.active {
+    display: block;
+}
+
+/* 로그인/회원가입 스타일 */
+.auth-section {
+    padding: 40px 30px;
+}
+
+.user-type-selector {
+    display: flex;
+    margin-bottom: 30px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.user-type {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 16px;
+}
+
+.user-type.active {
+    background: #2175f4;
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #2175f4;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #2175f4, #1e5ec4);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    margin-bottom: 15px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+/* 대시보드 스타일 */
+.welcome-card {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.feature-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.feature-card:hover {
+    border-color: #2175f4;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(33, 117, 244, 0.1);
+}
+
+.feature-icon {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.feature-title {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.feature-desc {
+    font-size: 12px;
+    color: #666;
+}
+
+/* 채팅 스타일 */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 20px);
+}
+
+.chat-header {
+    padding: 15px 20px;
+    background: #2175f4;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    max-height: 60vh;
+}
+
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.message.sent {
+    flex-direction: row-reverse;
+}
+
+.message-bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.message.sent .message-bubble {
+    background: #2175f4;
+    color: white;
+}
+
+.message-meta {
+    font-size: 10px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.message-input-area {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+}
+
+.message-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    outline: none;
+}
+
+.send-btn {
+    background: #2175f4;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 복약관리 스타일 */
+.medication-list {
+    space-y: 15px;
+}
+
+.medication-item {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.medication-item.taken {
+    border-color: #28a745;
+    background: #f8fff8;
+}
+
+.medication-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.medication-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.take-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.take-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* 예약 스타일 */
+.calendar-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.time-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.time-slot {
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.time-slot:hover {
+    border-color: #2175f4;
+}
+
+.time-slot.selected {
+    background: #2175f4;
+    color: white;
+}
+
+.time-slot.disabled {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* 로딩 스피너 */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2175f4;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    display: none;
+}
+
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    display: none;
+}
+
+/* 환자 카드 스타일 */
+.patient-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.patient-card:hover {
+    border-color: #2175f4;
+    transform: translateY(-2px);
+}
+
+.patient-card.urgent {
+    border-color: #dc3545;
+    background: #fff5f5;
+}
+
+.patient-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.patient-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.patient-status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    background: #28a745;
+    color: white;
+}
+
+.patient-status.urgent {
+    background: #dc3545;
+}
+
+.patient-status.warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.appointment-card {
+    background: white;
+    border-left: 4px solid #2175f4;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.appointment-time {
+    font-weight: bold;
+    color: #2175f4;
+    margin-bottom: 5px;
+}
+
+.qna-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.qna-card.unanswered {
+    border-color: #ffc107;
+    background: #fffdf5;
+}
+
+/* 알림 스타일 */
+.notification-item {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    border-left: 3px solid #fff;
+}
+
+.notification-urgent {
+    border-left-color: #ff4757;
+    background: rgba(255, 71, 87, 0.2);
+}
+
+.notification-info {
+    border-left-color: #3742fa;
+    background: rgba(55, 66, 250, 0.2);
+}
+
+.notification-success {
+    border-left-color: #2ed573;
+    background: rgba(46, 213, 115, 0.2);
+}
+
+/* 클릭 가능한 환자 카드 스타일 */
+.patient-card.clickable {
+    transition: all 0.2s ease;
+    border: 1px solid #e0e0e0 !important;
+}
+
+.patient-card.clickable:hover {
+    background-color: #f8f9fa !important;
+    border-color: #2175f4 !important;
+    box-shadow: 0 2px 4px rgba(33, 117, 244, 0.1);
+    transform: translateY(-1px);
+}
+
+/* 알림 아이콘 애니메이션 */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.reminder-icon {
+    animation: pulse 2s infinite;
+}
+
+/* 일정 관리 스타일 개선 */
+.schedule-date-header {
+    background: linear-gradient(135deg, #2175f4, #1e6ae0);
+    color: white;
+    padding: 12px 16px;
+    margin: 15px 0 10px 0;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(33, 117, 244, 0.2);
+}
+
+.schedule-date-header.today {
+    background: linear-gradient(135deg, #28a745, #20a038);
+}
+
+.appointment-card {
+    transition: all 0.2s ease;
+}
+
+.appointment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 파일 업로드 관련 스타일 */
+.file-upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+}
+
+.file-upload-area:hover {
+    border-color: #2175f4;
+}
+
+.file-upload-area.dragover {
+    border-color: #2175f4;
+    background-color: #f8f9fa;
+}
+
+/* 진료기록부 카드 스타일 */
+.record-card {
+    transition: all 0.2s ease;
+}
+
+.record-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 보호자 전용 웰컴 카드 */
+.guardian-welcome-card {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* 보호자 필드 스타일 */
+.guardian-fields {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid #28a745;
+    margin-top: 10px;
+}
+
+.guardian-fields h4 {
+    color: #28a745;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+/* 보호자 전용 기능 카드 */
+.feature-card.guardian {
+    border-color: #28a745;
+}
+
+.feature-card.guardian:hover {
+    border-color: #28a745;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(40, 167, 69, 0.1);
+}
+
+/* 인증 상태 카드 */
+.verification-status {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.verification-status.verified {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.verification-status.pending {
+    background: #e2e3e5;
+    border-color: #6c757d;
+    color: #495057;
+}
+
+/* 보호자 환자 검색 결과 스타일 */
+.search-result-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.search-result-card:hover {
+    background-color: #f0f8ff;
+    border-color: #2175f4;
+}
+
+.search-result-card.selected {
+    background-color: #e8f5e8;
+    border-color: #28a745;
+}
+
+/* 보호자 환자 검색 결과 개선 */
+#patientSearchResults {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #f8f9fa;
+    max-height: 300px;
+    overflow-y: auto;
+    min-height: 100px;
+}
+
+.search-result-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.search-result-card:hover {
+    background-color: #f0f8ff;
+    border-color: #2175f4;
+    transform: translateY(-1px);
+}
+
+.search-result-card.selected {
+    background-color: #e8f5e8;
+    border-color: #28a745;
+}
+
+/* 검색 입력창 포커스 스타일 */
+#patientSearchInput:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+/* 보호자 진료기록 관련 스타일 */
+.guardian-record-section {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    margin: 20px 0 15px 0;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.guardian-download-btn {
+    background: #28a745 !important;
+    position: relative;
+}
+
+.guardian-download-btn:hover {
+    background: #218838 !important;
+}
+
+.guardian-download-btn::after {
+    content: '👨‍👩‍👧‍👦';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 12px;
+    background: #20c997;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 임시 메시지 애니메이션 */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.temp-message {
+    animation: slideInRight 0.3s ease-out;
+}

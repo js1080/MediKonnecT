@@ -1,0 +1,25 @@
+{
+  "name": "MediKonnecT - 의료진 환자 소통 플랫폼",
+  "short_name": "MediKonnecT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2175f4",
+  "description": "의료진과 환자를 연결하는 스마트 플랫폼",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg width='192' height='192' fill='%232175f4' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V9C15 10.1 14.1 11 13 11H11C9.9 11 9 10.1 9 9V7.5L3 7V9H5V19C5 20.1 5.9 21 7 21H9C10.1 21 11 20.1 11 19V18H13V19C13 20.1 13.9 21 15 21H17C18.1 21 19 20.1 19 19V9H21Z'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg width='512' height='512' fill='%232175f4' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V9C15 10.1 14.1 11 13 11H11C9.9 11 9 10.1 9 9V7.5L3 7V9H5V19C5 20.1 5.9 21 7 21H9C10.1 21 11 20.1 11 19V18H13V19C13 20.1 13.9 21 15 21H17C18.1 21 19 20.1 19 19V9H21Z'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "prefer_related_applications": false,
+  "scope": "/",
+  "lang": "ko"
+}

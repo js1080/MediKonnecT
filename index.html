@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediKonnecT - 의료진 환자 소통 플랫폼</title>
+    
+    <!-- 기존 manifest 내용을 다음으로 교체 -->
+<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIk1lZGlLb25uZWNUIC0g7J2Y66OM7KeEIOybmOyekCDshoztlZUg7ZSM656r7Y+8IiwKICAic2hvcnRfbmFtZSI6ICJNZWRpS29ubmVjVCIsCiAgInN0YXJ0X3VybCI6ICIvIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmZmZmZmIiwKICAidGhlbWVfY29sb3IiOiAiIzIxNzVmNCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCUzQiUzQ3N2ZyB3aWR0aD0nMTkyJyBoZWlnaHQ9JzE5MicgZmlsbD0nJTIzMjE3NWY0JyB2aWV3Qm94PScwIDAgMjQgMjQnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyUzRSUzQ3BhdGggZD0nTTcgMTJjMC01LjUyMyAzLjI2MS05LjAxOCA3LjQzLTEwLjU4OGwtMS4xNy0uNTg0QzExLjM5OSAyLjE1IDEwLjIzMyA2IDkuNjQgOUgxMC42NGMuNTEyLTIuMzkgMS40MzUtNC4xMjMgMi41OTYtNUg5VDhoLS42NGMtMS43OCAyLjAzNC0yLjkxIDQuNzI5LTIuOTYgOEgxVjhoLTF2OGgxQzEgMTAuNzM5IDIuMTMgOC4wODQgNCA2LjI4QzEuMjcgOC42MTggMCAxMC4xNiAwIDEyYzAgMy4zMSAyLjA3IDYgNiA2czYtMi42OSA2LTZ6Ij4lM0MlMkZwYXRoJTNFJTNDJTJGc3ZnJTNFliwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-storage-compat.min.js"></script>
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MediKonnecT">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div id="loginScreen" class="screen active">
+            <div class="header">
+                <div class="logo">🏥 Medi<span style="color: #dc3545;">K</span>onnecT</div>
+                <div class="subtitle">의료진과 환자를 연결하는 스마트 플랫폼</div>
+            </div>
+            <div class="auth-section">
+                <div class="error-message" id="loginError"></div>
+                <div class="success-message" id="loginSuccess"></div>
+                <div class="user-type-selector">
+                    <button class="user-type active" onclick="selectUserType('patient')">👤 환자</button>
+                    <button class="user-type" onclick="selectUserType('guardian')">👨‍👩‍👧‍👦 보호자</button>
+                    <button class="user-type" onclick="selectUserType('doctor')">👨‍⚕️ 의료진</button>
+                </div>
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" id="loginEmail" placeholder="이메일을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요">
+                </div>
+                <button class="btn" onclick="login()">로그인</button>
+                <div style="text-align: center; color: #666; font-size: 14px;">
+                    계정이 없으신가요? <a href="#" onclick="showSignup()" style="color: #2175f4;">회원가입</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="signupScreen" class="screen">
+            <div class="header">
+                <div class="logo">🏥 MediConnect</div>
+                <div class="subtitle">회원가입</div>
+            </div>
+            <div class="auth-section">
+                <div class="error-message" id="signupError"></div>
+                <div class="success-message" id="signupSuccess"></div>
+                <div class="user-type-selector">
+                    <button class="user-type active" onclick="selectSignupUserType('patient')">👤 환자</button>
+                    <button class="user-type" onclick="selectSignupUserType('guardian')">👨‍👩‍👧‍👦 보호자</button>
+                    <button class="user-type" onclick="selectSignupUserType('doctor')">👨‍⚕️ 의료진</button>
+                </div>
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" id="signupName" placeholder="이름을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" id="signupEmail" placeholder="이메일을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="signupPassword" placeholder="비밀번호를 입력하세요 (6자 이상)">
+                </div>
+                <div id="doctorFields" style="display: none;">
+                    <div class="form-group">
+                        <label>의료진 유형</label>
+                        <select id="doctorType">
+                            <option value="doctor">의사</option>
+                            <option value="nurse">간호사</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>소속 병원</label>
+                        <input type="text" id="hospitalName" placeholder="소속 병원명을 입력하세요">
+                    </div>
+                    <div class="form-group">
+                        <label>진료과</label>
+                        <input type="text" id="department" placeholder="진료과를 입력하세요">
+                    </div>
+                </div>
+                <div id="guardianFields" style="display: none;" class="guardian-fields">
+                    <h4>👨‍👩‍👧‍👦 보호자 정보</h4>
+                    <div class="form-group">
+                        <label>피보호자와의 관계</label>
+                        <select id="relationshipType">
+                            <option value="parent">부모</option>
+                            <option value="spouse">배우자</option>
+                            <option value="child">자녀</option>
+                            <option value="sibling">형제/자매</option>
+                            <option value="relative">친척</option>
+                            <option value="caregiver">간병인</option>
+                            <option value="other">기타</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>연락처</label>
+                        <input type="tel" id="guardianPhone" placeholder="연락처를 입력하세요">
+                    </div>
+                    <div class="form-group">
+                        <label>응급연락처 (선택)</label>
+                        <input type="tel" id="emergencyContact" placeholder="응급상황 시 연락처">
+                    </div>
+                </div>
+                <button class="btn" onclick="signup()">회원가입</button>
+                <button class="btn btn-secondary" onclick="showLogin()">로그인으로 돌아가기</button>
+            </div>
+        </div>
+
+        <div id="patientDashboard" class="screen">
+            <div class="welcome-card">
+                <div style="font-size: 20px; margin-bottom: 10px;">안녕하세요, <span id="patientName">환자</span>님 👋</div>
+                <div style="font-size: 14px; opacity: 0.9;">오늘도 건강한 하루 되세요!</div>
+                <div id="patientNotifications" style="margin-top: 10px;"></div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card" onclick="showScreen('chatScreen')">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">의료진 상담</div>
+                    <div class="feature-desc">실시간 질문하기</div>
+                </div>
+                <div class="feature-card" onclick="showScreen('medicationScreen')">
+                    <div class="feature-icon">💊</div>
+                    <div class="feature-title">오늘의 복약</div>
+                    <div class="feature-desc">처방된 약 체크</div>
+                </div>
+                <div class="feature-card" onclick="showScreen('appointmentScreen')">
+                    <div class="feature-icon">📅</div>
+                    <div class="feature-title">진료 예약</div>
+                    <div class="feature-desc">온라인 예약</div>
+                </div>
+                <div class="feature-card" onclick="showScreen('qnaScreen')">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Q&A</div>
+                    <div class="feature-desc">커뮤니티 질문</div>
+                </div>
+                    <div class="feature-card" onclick="showScreen('medicalRecordsScreen')">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-title">진료기록부</div>
+                    <div class="feature-desc">내 진료기록 확인</div>
+                </div>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <button onclick="logout()" class="btn btn-secondary" style="width: auto; padding: 10px 20px; background: #dc3545;">로그아웃</button>
+            </div>
+        </div>
+
+        <!-- 새로 추가된 보호자 대시보드 -->
+        <div id="guardianDashboard" class="screen">
+            <div class="guardian-welcome-card">
+                <div style="font-size: 20px; margin-bottom: 10px;">안녕하세요, <span id="guardianName">보호자</span>님 👨‍👩‍👧‍👦</div>
+                <div style="font-size: 14px; opacity: 0.9;">소중한 가족의 건강을 함께 관리해요</div>
+                <div id="guardianNotifications" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- 가족관계 인증 상태 -->
+            <div id="verificationStatusCard" class="verification-status">
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">📋 가족관계 인증 상태</div>
+                <div id="verificationStatusText">인증을 위해 가족관계증명서를 업로드해주세요</div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card guardian" onclick="showScreen('familyVerificationScreen')">
+                    <div class="feature-icon">📄</div>
+                    <div class="feature-title">가족관계 인증</div>
+                    <div class="feature-desc">증명서 업로드</div>
+                </div>
+                
+                <div class="feature-card guardian" onclick="checkVerificationAndNavigate('guardianMedicationScreen')">
+                    <div class="feature-icon">💊</div>
+                    <div class="feature-title">복약 모니터링</div>
+                    <div class="feature-desc">복용률 확인</div>
+                </div>
+                <div class="feature-card guardian" onclick="checkVerificationAndNavigate('guardianAppointmentScreen')">
+                    <div class="feature-icon">📅</div>
+                    <div class="feature-title">대리 예약</div>
+                    <div class="feature-desc">진료 예약 관리</div>
+                </div>
+                <div class="feature-card guardian" onclick="checkVerificationAndNavigate('guardianRecordsScreen')">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-title">진료기록부</div>
+                    <div class="feature-desc">기록 확인</div>
+                </div>
+                <div class="feature-card guardian" onclick="showScreen('qnaScreen')">
+                    <div class="feature-icon">❓</div>
+                    <div class="feature-title">Q&A</div>
+                    <div class="feature-desc">커뮤니티 참여</div>
+                </div>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <button onclick="logout()" class="btn btn-secondary" style="width: auto; padding: 10px 20px; background: #dc3545;">로그아웃</button>
+            </div>
+        </div>
+
+        <!-- 가족관계 인증 화면 -->
+        <div id="familyVerificationScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📄 가족관계 인증</h2>
+            <div class="welcome-card" style="text-align: left; padding: 20px;">
+                <div style="font-size: 18px; margin-bottom: 10px;">💡 인증 안내</div>
+                <div style="font-size: 14px; line-height: 1.6;">
+                    • 피보호자의 의료 정보 접근을 위해 가족관계 인증이 필요합니다<br>
+                    • 피보호자를 검색하고 가족관계증명서(PDF)를 업로드해주세요<br>
+                    • 인증 완료 후 해당 환자의 모든 기능을 이용하실 수 있습니다
+                </div>
+            </div>
+            
+            <!-- 1단계: 피보호자 검색 -->
+            <div id="patientSearchStep" class="form-group">
+                <label>1단계: 피보호자 검색</label>
+                <input type="text" id="patientSearchInput" placeholder="환자 이름 또는 이메일 입력 (2글자 이상)" style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 2px solid #e0e0e0;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    margin-bottom: 10px;
+                " oninput="searchPatientsForVerification(this.value)">
+
+                <div id="patientSearchResults" style="
+            margin-top: 10px; 
+            max-height: 300px; 
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            min-height: 100px;
+        ">
+                
+                 <p style="text-align: center; color: #666; padding: 20px;">환자 이름 또는 이메일을 입력하세요.</p></div>
+            </div>
+
+            <!-- 2단계: 선택된 환자 표시 -->
+            <div id="selectedPatientStep" style="display: none;">
+                <label>2단계: 선택된 피보호자</label>
+                <div id="selectedPatientCard" style="
+                    border: 2px solid #28a745;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin: 10px 0;
+                    background: #f8fff8;
+                "></div>
+            </div>
+
+            <!-- 3단계: 관계 선택 -->
+            <div id="relationshipStep" style="display: none;" class="form-group">
+                <label>3단계: 가족관계 선택</label>
+                <select id="selectedRelationshipType" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    <option value="">관계를 선택하세요</option>
+                    <option value="parent">부모</option>
+                    <option value="spouse">배우자</option>
+                    <option value="child">자녀</option>
+                    <option value="sibling">형제/자매</option>
+                    <option value="relative">친척</option>
+                    <option value="caregiver">간병인</option>
+                    <option value="other">기타</option>
+                </select>
+            </div>
+            
+            <!-- 4단계: 가족관계증명서 업로드 -->
+            <div id="documentUploadStep" style="display: none;">
+                <div class="form-group">
+                    <label>4단계: 가족관계증명서 업로드</label>
+                    <input type="file" id="familyDocumentFile" accept=".pdf" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">PDF 파일만 업로드 가능 (최대 5MB)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>추가 설명 (선택사항)</label>
+                    <textarea id="verificationNote" placeholder="필요시 추가 설명을 입력하세요" style="width: 100%; padding: 10px; height: 80px; resize: vertical;"></textarea>
+                </div>
+            </div>
+            
+            <div id="verificationButtons">
+                <button class="btn" id="uploadBtn" onclick="uploadFamilyDocument()" style="display: none;">인증서류 업로드</button>
+                <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+            </div>
+        </div>
+
+
+        <!-- 보호자 - 복약 모니터링 화면 -->
+        <div id="guardianMedicationScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">💊 복약 모니터링</h2>
+            <div id="guardianMedicationList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <!-- 보호자 - 대리 예약 화면 -->
+        <div id="guardianAppointmentScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📅 대리 진료예약</h2>
+            <div id="guardianAppointmentList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <!-- 보호자 - 진료기록부 화면 -->
+        <div id="guardianRecordsScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📋 피보호자 진료기록부</h2>
+            <div id="guardianRecordsList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <div id="doctorDashboard" class="screen">
+            <div class="welcome-card">
+                <div style="font-size: 20px; margin-bottom: 10px;">안녕하세요, <span id="doctorName">의료진</span>님 👨‍⚕️</div>
+                <div style="font-size: 14px; opacity: 0.9;" id="doctorNotifications">알림을 확인하는 중...</div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card" onclick="showScreen('doctorChatListScreen')">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">환자 상담</div>
+                    <div class="feature-desc">환자별 상담 관리</div>
+                </div>
+                <div class="feature-card" onclick="showScreen('patientManagementScreen')">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">환자 관리 및 처방</div>
+                    <div class="feature-desc">환자 현황 확인</div>
+                </div>
+                <div class="feature-card" onclick="showScreen('medicationGuideScreen')">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-title">복약 지도</div>
+                    <div class="feature-desc">환자 복약 모니터링</div>
+                </div>
+                <div class="feature-card" onclick="showScreen('doctorScheduleScreen')">
+                    <div class="feature-icon">📅</div>
+                    <div class="feature-title">일정 관리</div>
+                    <div class="feature-desc">예약 환자 일정</div>
+                </div>
+                <div class="feature-card" onclick="showScreen('doctorQnaScreen')">
+                    <div class="feature-icon">❓</div>
+                    <div class="feature-title">Q&A 관리</div>
+                    <div class="feature-desc">환자 질문 답변</div>
+                </div>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <button onclick="logout()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">로그아웃</button>
+            </div>
+        </div>
+
+        <div id="chatScreen" class="screen">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <button class="back-btn" onclick="goBack()">←</button>
+                    <div>
+                        <div style="font-weight: bold;" id="chatTitle">상담실</div>
+                        <div style="font-size: 12px; opacity: 0.8;">온라인</div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="message-input-area">
+                    <input type="text" class="message-input" id="messageInput" placeholder="메시지를 입력하세요..." onkeypress="handleEnter(event)">
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="medicationScreen" class="screen">
+            <h2 style="margin-bottom: 10px;">💊 오늘의 복약</h2>
+            <p style="font-size: 14px; color: #666; margin-bottom: 20px;">의료진이 처방한 약과 직접 추가한 약을 확인하세요.</p>
+            
+            <div id="todayMedicationSchedule">
+                </div>
+
+            <div class="medication-list" id="medicationList" style="margin-top: 15px;">
+                </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">🗓️ 주간 복용 기록</h3>
+            <div id="medicationCalendarView" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center;"></div>
+
+            <button class="btn" onclick="addMedication()" style="margin-top: 20px;">새 약물 직접 추가</button>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+        
+        <div id="appointmentScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📅 진료 예약</h2>
+            <div class="calendar-container">
+                <h3>날짜 선택</h3>
+                <input type="date" id="appointmentDate" class="form-group" style="width: 100%; padding: 10px; margin: 10px 0;">
+                <h3>시간 선택</h3>
+                <div class="time-slots" id="timeSlots">
+                    <div class="time-slot" onclick="selectTimeSlot(this, '09:00')">09:00</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '09:30')">09:30</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '10:00')">10:00</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '10:30')">10:30</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '11:00')">11:00</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '11:30')">11:30</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '14:00')">14:00</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '14:30')">14:30</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '15:00')">15:00</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '15:30')">15:30</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '16:00')">16:00</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '16:30')">16:30</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '17:00')">17:00</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '17:30')">17:30</div>
+                    <div class="time-slot" onclick="selectTimeSlot(this, '18:00')">18:00</div>
+                </div>
+                <button class="btn" onclick="makeAppointment()" style="margin-top: 20px;">예약하기</button>
+            </div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <div id="qnaScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">❓ Q&A 커뮤니티</h2>
+            <div id="qnaList"></div>
+            <button class="btn" onclick="askQuestion()">질문하기</button>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <div id="doctorChatListScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">💬 상담 환자 관리</h2>
+            <div id="patientChatList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <div id="patientManagementScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">👥 환자 관리 및 처방</h2>
+            <div id="patientManagementList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+        
+        <div id="prescriptionScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📝 복약 처방하기</h2>
+            <div class="welcome-card" style="text-align: left; padding: 20px;">
+                <div style="font-size: 18px;">환자: <span id="prescribingPatientName" style="font-weight: bold;"></span></div>
+            </div>
+            <div class="form-group">
+                <label>약물명</label>
+                <input type="text" id="prescriptionMedName" placeholder="예: 타이레놀">
+            </div>
+            <div class="form-group">
+                <label>용량</label>
+                <input type="text" id="prescriptionDosage" placeholder="예: 500mg 1정">
+            </div>
+            <div class="form-group">
+                <label>복용 시간 (중복 선택 가능)</label>
+                <div style="display: flex; justify-content: space-around; padding: 10px 0;">
+                    <label><input type="checkbox" name="prescriptionTimes" value="아침"> 아침</label>
+                    <label><input type="checkbox" name="prescriptionTimes" value="점심"> 점심</label>
+                    <label><input type="checkbox" name="prescriptionTimes" value="저녁"> 저녁</label>
+                    <label><input type="checkbox" name="prescriptionTimes" value="취침 전"> 취침 전</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>복용 기간</label>
+                <select id="prescriptionDuration">
+                    <option value="3">3일</option>
+                    <option value="7">7일</option>
+                    <option value="14">14일</option>
+                    <option value="30">30일</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>복용법 및 주의사항</label>
+                <textarea id="prescriptionInstructions" class="form-group" style="width: 100%; padding: 10px;" rows="3" placeholder="예: 식후 30분 이내에 복용하세요."></textarea>
+            </div>
+            <button class="btn" onclick="submitPrescription()">처방전 전송</button>
+            <button class="btn btn-secondary" onclick="goBack()">취소</button>
+        </div>
+
+        <div id="medicationGuideScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📋 복약 지도 모니터링</h2>
+            <div class="welcome-card" style="margin-bottom: 20px;">
+                <div style="font-size: 18px; margin-bottom: 10px;">📊 오늘의 알림</div>
+                <div style="font-size: 14px;" id="medicationAlerts">복약 관련 알림을 확인하세요</div>
+            </div>
+            <div id="medicationGuideList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <div id="doctorScheduleScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📅 진료 일정 관리</h2>
+            <div class="welcome-card" style="margin-bottom: 20px;">
+                <div style="font-size: 18px; margin-bottom: 10px;">📋 오늘 예약 현황</div>
+                <div style="font-size: 14px;" id="todayAppointmentCount">오늘 예약된 환자: 0명</div>
+            </div>
+            <div id="doctorScheduleList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <div id="doctorQnaScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">❓ Q&A 답변 관리</h2>
+            <div id="doctorQnaList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <div id="medicalRecordsScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📋 내 진료기록부</h2>
+            <div id="medicalRecordsList"></div>
+            <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+        </div>
+
+        <div id="uploadMedicalRecordScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">📤 진료기록부 업로드</h2>
+            <div class="welcome-card" style="text-align: left; padding: 20px;">
+                <div style="font-size: 18px;">환자: <span id="uploadRecordPatientName" style="font-weight: bold;"></span></div>
+            </div>
+            <div class="form-group">
+                <label>진료기록부 제목</label>
+                <input type="text" id="recordTitle" placeholder="예: 2025년 1월 정기검진">
+            </div>
+            <div class="form-group">
+                <label>파일 선택 (PDF만 가능)</label>
+                <input type="file" id="recordFile" accept=".pdf" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+            </div>
+            <div class="form-group">
+                <label>설명 (선택사항)</label>
+                <textarea id="recordDescription" placeholder="진료 내용이나 특이사항을 입력하세요" style="width: 100%; padding: 10px; height: 100px; resize: vertical;"></textarea>
+            </div>
+            <button class="btn" onclick="uploadMedicalRecord()">업로드</button>
+            <button class="btn btn-secondary" onclick="goBack()">취소</button>
+        </div>
+        
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>처리 중입니다...</div>
+        </div>
+
+        
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
